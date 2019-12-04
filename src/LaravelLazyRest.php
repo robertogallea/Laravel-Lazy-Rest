@@ -12,11 +12,20 @@ class LaravelLazyRest
     protected $client;
     protected $options;
 
+    /**
+     * LaravelLazyRest constructor.
+     * @param Client|null $client
+     */
     public function __construct(Client $client = null)
     {
         $this->client = $client;
     }
 
+    /**
+     * @param $endpoint
+     * @param array $options
+     * @return LazyCollection
+     */
     public function load($endpoint, $options = [])
     {
         return LazyCollection::make(function () use ($endpoint, $options) {

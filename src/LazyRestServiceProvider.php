@@ -3,11 +3,15 @@
 
 namespace robertogallea\LaravelLazyRest;
 
-
 use Illuminate\Support\ServiceProvider;
 
 class LazyRestServiceProvider extends ServiceProvider
 {
+    /**
+     * Register any application services.
+     *
+     * @return void
+     */
     public function register()
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/lazy_rest.php', 'lazy_rest');
@@ -17,6 +21,10 @@ class LazyRestServiceProvider extends ServiceProvider
         });
     }
 
+
+    /**
+     * Boots the service provider
+     */
     public function boot()
     {
         if ($this->app->runningInConsole()) {

@@ -5,7 +5,6 @@ namespace robertogallea\LaravelLazyRest\Tests\unit;
 
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Handler\MockHandler;
 
 use GuzzleHttp\HandlerStack;
