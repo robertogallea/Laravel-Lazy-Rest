@@ -15,8 +15,15 @@ dump($collection->skip(10)->first());
 // loads all the pages
 dump($collection->last());
 ```
+## 1. Installation
+To install the package, run the command
 
-## 1. Configuration
+`composer require robertogallea/laravel-lazy-rest`
+
+ServiceProvider and Facade alias included in the package are autoloaded automatically using Laravel auto-discovery 
+service.
+
+## 2. Configuration
 By default, the package is configured to search for `data` field in the json response and `next_page_url` to detect how 
 to fetch the next page of results. However you could easily change this behavior by overriding default configuration:
 
@@ -35,7 +42,7 @@ to fetch the next page of results. However you could easily change this behavior
 if your data are in the root of the response use `_` character as field name (even though this means your endpoint 
 doesn't provide paginated data.
 
-# 2. Issues, Questions and Pull Requests
+# 3. Issues, Questions and Pull Requests
 You can report issues and ask questions in the 
 [issues section](https://github.com/robertogallea/Laravel-Lazy-Rest/issues).
 Please start your issue with ISSUE: and your question 
