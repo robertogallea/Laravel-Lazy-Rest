@@ -26,7 +26,7 @@ class LaravelLazyRest
      * @param array $options
      * @return LazyCollection
      */
-    public function load($endpoint, $options = [])
+    public function load(string $endpoint, array $options = [])
     {
         return LazyCollection::make(function () use ($endpoint, $options) {
             $count = 0;
@@ -56,7 +56,7 @@ class LaravelLazyRest
         });
     }
 
-    private function getNextPage(string $nextPage, $options): array
+    private function getNextPage(string $nextPage, array $options): array
     {
         $response = $this->client->request('GET', $nextPage, $options);
 
@@ -71,7 +71,7 @@ class LaravelLazyRest
         return array($data->{config('lazy_rest.fields.data')}, $nextPage);
     }
 
-    private function offsetKeys($data, $count)
+    private function offsetKeys(array $data, int $count)
     {
         $newData = [];
 

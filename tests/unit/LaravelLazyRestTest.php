@@ -18,10 +18,15 @@ class LaravelLazyRestTest extends TestCase
 {
     protected $client;
 
-    /** @test */
-    public function it_loads_resource_from_single_page_rest_endpoints()
+    /**
+     * @test
+     * @dataProvider mockHandlers
+     */
+    public function it_loads_resources_from_rest_endpoints($mockHandler, $dataField, $count)
     {
-        $handler = HandlerStack::create($this->getSinglePageMockHandler());
+        config()->set('lazy_rest.fields.data', $dataField);
+
+        $handler = HandlerStack::create($mockHandler);
         $client = new Client(['handler' => $handler]);
 
         $lazyRest = new LaravelLazyRest($client);
@@ -29,58 +34,11 @@ class LaravelLazyRestTest extends TestCase
         $collection = $lazyRest->load('http://test-endpoint.it/api/bla');
 
         $this->assertInstanceOf(LazyCollection::class, $collection);
-        $this->assertEquals(3, $collection->count());
+        $this->assertCount($count, $collection->all());
     }
 
     /** @test */
-    public function it_loads_resource_from_multiple_page_rest_endpoints()
-    {
-        $handler = HandlerStack::create($this->getMultiPageMockHandler());
-        $client = new Client(['handler' => $handler]);
-
-        $lazyRest = new LaravelLazyRest($client);
-
-        $collection = $lazyRest->load('http://test-endpoint.it');
-
-        $this->assertEquals(6, $collection->count());
-    }
-
-    /** @test */
-    public function it_offsets_elements_loaded_from_multiple_page_rest_endpoints()
-    {
-        /*
-         * This test is required because each page returns always the same element keys, so proper offsets are required
-         * in order not to overwrite previous page elements
-         */
-
-        $handler = HandlerStack::create($this->getMultiPageMockHandler());
-        $client = new Client(['handler' => $handler]);
-
-        $lazyRest = new LaravelLazyRest($client);
-
-        $collection = $lazyRest->load('http://test-endpoint.it');
-
-        $this->assertCount(6, $collection->all());
-    }
-
-
-    /** @test */
-    public function it_loads_resource_with_root_data()
-    {
-        config()->set('lazy_rest.fields.data', '_');
-
-        $handler = HandlerStack::create($this->getRootDataMockHandler());
-        $client = new Client(['handler' => $handler]);
-
-        $lazyRest = new LaravelLazyRest($client);
-
-        $collection = $lazyRest->load('http://some-url');
-
-        $this->assertCount(2, $collection->all());
-    }
-
-    /** @test */
-    public function it_has_facade_access()
+    public function it_can_use_facade()
     {
         $handler = HandlerStack::create($this->getSinglePageMockHandler());
         $client = new Client(['handler' => $handler]);
@@ -93,6 +51,15 @@ class LaravelLazyRestTest extends TestCase
 
         $this->assertInstanceOf(LazyCollection::class, $collection);
         $this->assertEquals(3, $collection->count());
+    }
+
+    public function mockHandlers()
+    {
+        return [
+            [$this->getSinglePageMockHandler(), 'data', 3],
+            [$this->getMultiPageMockHandler(), 'data', 6],
+            [$this->getRootDataMockHandler(), '_', 2]
+        ];
     }
 
     private function getSinglePageMockHandler()
@@ -141,12 +108,8 @@ class LaravelLazyRestTest extends TestCase
     {
         return new MockHandler([
             new Response(200, [], json_encode([
-                [
-                    'a' => 1
-                ],
-                [
-                    'a' => 2
-                ]
+                ['a' => 1],
+                ['a' => 2]
             ]))
         ]);
     }

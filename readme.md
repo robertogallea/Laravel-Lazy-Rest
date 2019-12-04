@@ -15,6 +15,7 @@ dump($collection->skip(10)->first());
 // loads all the pages
 dump($collection->last());
 ```
+
 ## 1. Installation
 To install the package, run the command
 
