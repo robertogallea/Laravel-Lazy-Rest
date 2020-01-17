@@ -1,7 +1,7 @@
 <?php
 
 
-namespace robertogallea\LaravelLazyRest\Tests\unit;
+namespace robertogallea\LaravelLazyRest\Tests\Unit;
 
 
 use GuzzleHttp\Client;
@@ -66,8 +66,6 @@ class LaravelLazyRestTest extends TestCase
     {
         return new MockHandler([
             new Response(200, [], json_encode([
-                'current_page' => 1,
-                'last_page' => 1,
                 'next_page_url' => null,
                 'data' => [
                     ['id' => 1, 'text' => 'abc'],
@@ -82,8 +80,6 @@ class LaravelLazyRestTest extends TestCase
     {
         return new MockHandler([
             new Response(200, [], json_encode([
-                'current_page' => 1,
-                'last_page' => 2,
                 'next_page_url' => 'some_url',
                 'data' => [
                     ['id' => 1, 'text' => 'abc'],
@@ -92,8 +88,6 @@ class LaravelLazyRestTest extends TestCase
                 ]
             ])),
             new Response(200, [], json_encode([
-                'current_page' => 2,
-                'last_page' => 2,
                 'next_page_url' => null,
                 'data' => [
                     ['id' => 4, 'text' => 'jkl'],
