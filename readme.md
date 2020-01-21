@@ -1,8 +1,6 @@
 # Laravel-Lazy-Rest
 
-This package provides full loading of RESTful paginated resources using Laravel `LazyCollection` capabilities.
-In this way, no complicate mechanisms for handling pagination is required because the package manages all the complexity
-for you, if required.
+This package provides loading of RESTful paginated resources using Laravel LazyCollection capabilities. In this way, no complicate mechanisms for on-demand paginated data handling is required because the package manages all the complexity transparently for you, and only if required.
 
 ```php
 $paginatedEndpoint = 'http://api.with-15-elements-per-page';
