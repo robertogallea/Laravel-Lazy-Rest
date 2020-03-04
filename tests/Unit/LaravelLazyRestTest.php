@@ -9,6 +9,7 @@ use GuzzleHttp\Handler\MockHandler;
 
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\LazyCollection;
 use Orchestra\Testbench\TestCase;
 use robertogallea\LaravelLazyRest\Facades\LazyRestFacade;
@@ -22,35 +23,26 @@ class LaravelLazyRestTest extends TestCase
      * @test
      * @dataProvider mockHandlers
      */
-    public function it_loads_resources_from_rest_endpoints($mockHandler, $dataField, $count)
+    public function it_loads_resources_from_rest_endpoints($mockResponses, $dataField, $count)
     {
         config()->set('lazy_rest.fields.data', $dataField);
 
-        $handler = HandlerStack::create($mockHandler);
-        $client = new Client(['handler' => $handler]);
+        $mockSequence = Http::sequence();
 
-        $lazyRest = new LaravelLazyRest($client);
+        foreach ($mockResponses as $mockResponse) {
+            $responses[] = $mockSequence->push($mockResponse);
+        }
+
+        Http::fake([
+            'http://test-endpoint.it/api/bla*' => $mockSequence
+        ]);
+
+        $lazyRest = new LaravelLazyRest();
 
         $collection = $lazyRest->load('http://test-endpoint.it/api/bla');
 
         $this->assertInstanceOf(LazyCollection::class, $collection);
         $this->assertCount($count, $collection->all());
-    }
-
-    /** @test */
-    public function it_can_use_facade()
-    {
-        $handler = HandlerStack::create($this->getSinglePageMockHandler());
-        $client = new Client(['handler' => $handler]);
-
-        $lazyRest = new LaravelLazyRest($client);
-
-        $this->instance('lazyrest', $lazyRest);
-
-        $collection = \LazyRest::load('http://test-endpoint.it/api/bla');
-
-        $this->assertInstanceOf(LazyCollection::class, $collection);
-        $this->assertEquals(3, $collection->count());
     }
 
     public function mockHandlers()
@@ -62,50 +54,64 @@ class LaravelLazyRestTest extends TestCase
         ];
     }
 
+    /** @test */
+    public function it_can_use_facade()
+    {
+        Http::fake([
+            'http://test-endpoint.it/api/bla*' => Http::sequence()
+                ->push($this->getSinglePageMockHandler()[0])
+        ]);
+
+        $collection = \LazyRest::load('http://test-endpoint.it/api/bla');
+
+        $this->assertInstanceOf(LazyCollection::class, $collection);
+        $this->assertEquals(3, $collection->count());
+    }
+
     private function getSinglePageMockHandler()
     {
-        return new MockHandler([
-            new Response(200, [], json_encode([
+        return [
+            [
                 'next_page_url' => null,
                 'data' => [
                     ['id' => 1, 'text' => 'abc'],
                     ['id' => 2, 'text' => 'def'],
                     ['id' => 3, 'text' => 'ghi'],
                 ]
-            ]))
-        ]);
+            ]
+        ];
     }
 
     private function getMultiPageMockHandler()
     {
-        return new MockHandler([
-            new Response(200, [], json_encode([
-                'next_page_url' => 'some_url',
+        return [
+            [
+                'next_page_url' => 'http://test-endpoint.it/api/bla?page=2',
                 'data' => [
                     ['id' => 1, 'text' => 'abc'],
                     ['id' => 2, 'text' => 'def'],
                     ['id' => 3, 'text' => 'ghi'],
                 ]
-            ])),
-            new Response(200, [], json_encode([
+            ],
+            [
                 'next_page_url' => null,
                 'data' => [
                     ['id' => 4, 'text' => 'jkl'],
                     ['id' => 5, 'text' => 'mno'],
                     ['id' => 6, 'text' => 'pqr'],
                 ]
-            ]))
-        ]);
+            ]
+        ];
     }
 
     protected function getRootDataMockHandler()
     {
-        return new MockHandler([
-            new Response(200, [], json_encode([
+        return [
+            [
                 ['a' => 1],
                 ['a' => 2]
-            ]))
-        ]);
+            ]
+        ];
     }
 
     protected function getPackageProviders($app)

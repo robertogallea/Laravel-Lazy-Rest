@@ -4,22 +4,12 @@
 namespace robertogallea\LaravelLazyRest;
 
 
-use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\LazyCollection;
 
 class LaravelLazyRest
 {
-    protected $client;
     protected $options;
-
-    /**
-     * LaravelLazyRest constructor.
-     * @param Client|null $client
-     */
-    public function __construct(Client $client = null)
-    {
-        $this->client = $client;
-    }
 
     /**
      * @param $endpoint
@@ -37,13 +27,6 @@ class LaravelLazyRest
 
             $nextPage = $baseUri;
 
-            if (!$this->client) {
-                $this->client = new Client([
-                    'base_uri' => $baseUri,
-                    'timeout' => config('lazy_rest.timeout'),
-                ]);
-            }
-
             while (!is_null($nextPage)) {
                 list($data, $nextPage) = $this->getNextPage($nextPage, $options);
 
@@ -58,17 +41,17 @@ class LaravelLazyRest
 
     private function getNextPage(string $nextPage, array $options): array
     {
-        $response = $this->client->request('GET', $nextPage, $options);
+        $response = Http::get($nextPage);
 
-        $data = json_decode($response->getBody());
+        $data = $response->json();
 
-        $nextPage = $data->{config('lazy_rest.fields.next_page_url')} ?? null;
+        $nextPage = $data[config('lazy_rest.fields.next_page_url')] ?? null;
 
         if (config('lazy_rest.fields.data') == '_') {
             return array($data, $nextPage);
         }
 
-        return array($data->{config('lazy_rest.fields.data')}, $nextPage);
+        return array($data[config('lazy_rest.fields.data')], $nextPage);
     }
 
     private function offsetKeys(array $data, int $count)
