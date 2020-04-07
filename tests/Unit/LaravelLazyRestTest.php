@@ -45,6 +45,44 @@ class LaravelLazyRestTest extends TestCase
         $this->assertCount($count, $collection->all());
     }
 
+    /**
+     * @test
+     * @dataProvider mockHandlers
+     */
+    public function it_can_add_options($mockResponses, $dataField, $count)
+    {
+        config()->set('lazy_rest.fields.data', $dataField);
+
+        $mockSequence = Http::sequence();
+
+        foreach ($mockResponses as $mockResponse) {
+            $responses[] = $mockSequence->push($mockResponse);
+        }
+
+        Http::fake([
+            'http://test-endpoint.it/api/bla*' => $mockSequence
+        ]);
+
+        $lazyRest = new LaravelLazyRest();
+
+        $collection = $lazyRest->load('http://test-endpoint.it/api/bla', [
+            'headers' => [
+                'User-Agent' => 'testing/1.0',
+                'Accept'     => 'application/json',
+            ],
+            'query' => ['foo' => 'bar'],
+        ]);
+
+        $this->assertCount($count, $collection->all());
+
+        Http::assertSent(function ($request) {
+            $this->assertTrue($request->hasHeader('User-Agent', 'testing/1.0'));
+            $this->assertTrue($request->hasHeader('Accept', 'application/json'));
+            $this->assertEquals('http://test-endpoint.it/api/bla?foo=bar', $request->url());
+            return true;
+        });
+    }
+    
     public function mockHandlers()
     {
         return [
