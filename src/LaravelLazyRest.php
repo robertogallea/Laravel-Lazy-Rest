@@ -41,7 +41,7 @@ class LaravelLazyRest
 
     private function getNextPage(string $nextPage, array $options): array
     {
-        $response = Http::get($nextPage);
+        $response = Http::withOptions($options)->get($nextPage);
 
         $data = $response->json();
 
